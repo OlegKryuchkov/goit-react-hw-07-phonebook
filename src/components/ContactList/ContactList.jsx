@@ -1,28 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteContact } from '../../redux/contacts/contacts-slice';
-import { getFilteredContacts } from '../../redux/contacts/contacts-selectors';
+import { selectFilteredContacts } from '../../redux/filter/filter-selectors';
+import { deleteContactsThunk } from '../../redux/contacts/contacts-thunk';
+import { getContactsThunk } from '../../redux/contacts/contacts-thunk';
 import ContactItem from '../ContactItem/ContactItem';
 import style from './ContactList.module.css';
 
 const ContactList = () => {
-  const visibleContacts = useSelector(getFilteredContacts);
+  const contacts = useSelector(selectFilteredContacts);
   const dispatch = useDispatch();
-  const handleDeleteContact = contactId => {
-    dispatch(deleteContact(contactId));
+
+  useEffect(() => {
+    dispatch(getContactsThunk());
+  }, [dispatch]);
+
+  const handleContactDelete = id => {
+    dispatch(deleteContactsThunk(id));
   };
 
   return (
     <ul className={style.list}>
-      {visibleContacts.length !== 0 ? (
-        visibleContacts.map(({ id, name, number }) => {
+      {contacts.length ? (
+        contacts.map(({ id, name, number }) => {
           return (
             <ContactItem
               key={id}
               id={id}
               name={name}
               number={number}
-              onDeleteContact={handleDeleteContact}
+              onDelete={() => handleContactDelete(id)}
             />
           );
         })

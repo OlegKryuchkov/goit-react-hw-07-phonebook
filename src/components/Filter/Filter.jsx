@@ -1,14 +1,12 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setFilter } from '../../redux/filter/filter-slice';
+import { selectFilter } from '../../redux/filter/filter-selectors';
+import { filterContactAction } from '../../redux/filter/filter-slice';
 import style from './Filter.module.css';
 
 const Filter = () => {
+  const filterValue = useSelector(selectFilter);
   const dispatch = useDispatch();
-  const filter = useSelector(state => state.filter);
-  const handleChange = event => {
-    dispatch(setFilter(event.currentTarget.value));
-  };
 
   return (
     <div className={style.searchContainer}>
@@ -19,8 +17,8 @@ const Filter = () => {
           placeholder=" "
           className={style.inputName}
           title="Enter search name"
-          onChange={handleChange}
-          value={filter}
+          onChange={e => dispatch(filterContactAction(e.target.value))}
+          value={filterValue}
         />
       </label>
     </div>

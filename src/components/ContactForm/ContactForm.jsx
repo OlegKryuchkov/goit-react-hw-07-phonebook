@@ -1,52 +1,53 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { nanoid } from 'nanoid';
-import { addContact } from '../../redux/contacts/contacts-slice';
+import { useEffect, useState } from 'react';
 import style from './ContactForm.module.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectContacts } from '../../redux/contacts/contacts-selectors';
+import {
+  addContactsThunk,
+  getContactsThunk,
+} from 'redux/contacts/contacts-thunk';
 
-const ContactForm = ({ onSubmit, contactsName }) => {
+const ContactForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+
   const dispatch = useDispatch();
-  const contacts = useSelector(state => state.contacts);
+  useEffect(() => {
+    dispatch(getContactsThunk());
+  }, [dispatch]);
 
-  const handleChange = event => {
-    const { name, value } = event.currentTarget;
-
-    if (name === 'number' && !/^[0-9\s-+()]*$/.test(value)) {
-      alert('Введіть лише цифри, символи та пробіл!');
-      return;
-    }
-
-    if (name === 'name') {
-      setName(value);
-    } else if (name === 'number') {
-      setNumber(value);
+  const handleChange = e => {
+    const { name, value } = e.currentTarget;
+    switch (name) {
+      case 'name':
+        setName(value);
+        break;
+      case 'number':
+        setNumber(value);
+        break;
+      default:
     }
   };
 
-  const handleSubmit = event => {
-    event.preventDefault();
+  const contacts = useSelector(selectContacts);
 
-    const newContact = {
-      id: nanoid(),
-      name,
-      number,
+  const handleSubmit = e => {
+    e.preventDefault();
+
+    const newContacts = {
+      name: name,
+      number: number,
     };
 
-    const isContactExist = contacts.find(
-      contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
-    );
-    if (isContactExist) {
-      alert(`${newContact.name} is already in contacts`);
-      return;
+    if (
+      contacts.some(
+        contact =>
+          contact.name.toLowerCase().trim() === name.toLowerCase().trim()
+      )
+    ) {
+      return alert(`${name} is already in contacts`);
     }
-
-    dispatch(addContact(newContact));
-    reset();
-  };
-
-  const reset = () => {
+    dispatch(addContactsThunk(newContacts));
     setName('');
     setNumber('');
   };
